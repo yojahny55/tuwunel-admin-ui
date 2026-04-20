@@ -78,14 +78,17 @@ export default function Users() {
         {/* Create User */}
         <Card title="Create User">
           <form onSubmit={handleCreate} className="space-y-3">
-            <input
-              type="text"
-              placeholder="Username (localpart)"
-              value={newUser.username}
-              onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-              required
-            />
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Username — local part only (becomes <span className="text-indigo-400 font-mono">@username:atreides.local</span>)</label>
+              <input
+                type="text"
+                placeholder="e.g. jessica"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                required
+              />
+            </div>
             <input
               type="password"
               placeholder="Password"
