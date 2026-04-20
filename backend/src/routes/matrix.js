@@ -111,27 +111,28 @@ export default async function (app) {
       // Auto-join: login as the invited user and join the room
       if (auto_join) {
         try {
-          const MATRIX_DOMAIN = process.env.MATRIX_DOMAIN || 'atreides.local';
           const localPart = user_id.replace(/^@/, '').replace(/:.+$/, '');
-          // Try common password first, then fail silently
+          const userPassword = request.body.password || '';
+          if (!userPassword) throw new Error('Password required for auto-join');
           const loginRes = await fetch(`${MATRIX_SERVER}/_matrix/client/v3/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: 'm.login.password',
               identifier: { type: 'm.id.user', user: localPart },
-              password: request.body.password || '',
+              password: userPassword,
             }),
           });
           const loginData = await loginRes.json();
-          if (loginRes.ok && loginData.access_token) {
-            await fetch(`${MATRIX_SERVER}/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/join`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${loginData.access_token}`, 'Content-Type': 'application/json' },
-              body: '{}',
-            });
-          }
-        } catch { /* auto-join best effort */ }
+          if (!loginRes.ok) throw new Error(loginData.error || 'Login failed for auto-join');
+          await fetch(`${MATRIX_SERVER}/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/join`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${loginData.access_token}`, 'Content-Type': 'application/json' },
+            body: '{}',
+          });
+        } catch (joinErr) {
+          return reply.code(207).send({ success: true, invite: true, auto_join_failed: true, error: joinErr.message });
+        }
       }
 
       return { success: true };

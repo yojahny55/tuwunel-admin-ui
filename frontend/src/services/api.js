@@ -41,9 +41,9 @@ export const api = {
     }),
   deleteRoom: (roomId) =>
     request(`/rooms/${encodeURIComponent(roomId)}/delete`, { method: 'POST' }),
-  inviteToRoom: (roomId, userId, autoJoin = true) =>
+  inviteToRoom: (roomId, userId, autoJoin = true, password = '') =>
     request(`/rooms/${encodeURIComponent(roomId)}/invite`, {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, auto_join: autoJoin }),
+      body: JSON.stringify({ user_id: userId, auto_join: autoJoin, password }),
     }),
 };
