@@ -41,4 +41,9 @@ export const api = {
     }),
   deleteRoom: (roomId) =>
     request(`/rooms/${encodeURIComponent(roomId)}/delete`, { method: 'POST' }),
+  inviteToRoom: (roomId, userId) =>
+    request(`/rooms/${encodeURIComponent(roomId)}/invite`, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId }),
+    }),
 };

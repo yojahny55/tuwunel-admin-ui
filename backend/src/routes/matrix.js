@@ -94,6 +94,24 @@ export default async function (app) {
     }
   });
 
+  // Invite user to room
+  app.post('/rooms/:roomId/invite', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const { roomId } = request.params;
+    const { user_id } = request.body || {};
+    if (!user_id) return reply.code(400).send({ error: 'user_id required' });
+    try {
+      await matrixRequest(
+        'POST',
+        `/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/invite`,
+        getToken(request),
+        { user_id }
+      );
+      return { success: true };
+    } catch (err) {
+      return reply.code(500).send({ error: err.error || 'Failed to invite' });
+    }
+  });
+
   // User profile
   app.get('/users/:userId/profile', { preHandler: [app.authenticate] }, async (request) => {
     const { userId } = request.params;

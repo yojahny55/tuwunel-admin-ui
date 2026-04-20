@@ -10,6 +10,9 @@ export default function Rooms() {
   const [selected, setSelected] = useState(null);
   const [members, setMembers] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [inviteUserId, setInviteUserId] = useState('');
+  const [inviting, setInviting] = useState(null);
+  const [output, setOutput] = useState('');
 
   const showMembers = async (roomId) => {
     setSelected(roomId);
@@ -103,7 +106,39 @@ export default function Rooms() {
             ))}
             {Object.keys(members).length === 0 && <p className="text-gray-500 text-sm">No members found</p>}
           </div>
-          <button onClick={() => { setSelected(null); setMembers(null); }} className="mt-2 text-xs text-gray-500 hover:text-gray-300">Close</button>
+
+          {/* Invite user to room */}
+          <div className="mt-4 pt-3 border-t border-gray-800">
+            <label className="block text-xs text-gray-400 mb-1">Invite user to this room</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="@username:atreides.local"
+                value={inviting === selected ? inviteUserId : ''}
+                onChange={(e) => { setInviteUserId(e.target.value); setInviting(selected); }}
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-indigo-500"
+              />
+              <button
+                onClick={async () => {
+                  if (!inviteUserId) return;
+                  try {
+                    await api.inviteToRoom(selected, inviteUserId);
+                    setOutput(`✅ Invited ${inviteUserId} to ${selected}`);
+                    setInviteUserId('');
+                    showMembers(selected); // refresh members
+                  } catch (err) {
+                    setOutput(`❌ ${err.message}`);
+                  }
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm"
+              >
+                Invite
+              </button>
+            </div>
+          </div>
+
+          {output && <pre className="mt-2 text-sm text-gray-300 whitespace-pre-wrap font-mono">{output}</pre>}
+          <button onClick={() => { setSelected(null); setMembers(null); setOutput(''); }} className="mt-2 text-xs text-gray-500 hover:text-gray-300">Close</button>
         </Card>
       )}
     </div>
