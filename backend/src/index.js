@@ -35,7 +35,9 @@ app.register(matrixRoutes, { prefix: '/api' });
 app.register(adminRoutes, { prefix: '/api' });
 
 // Serve frontend static files in production
-const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.register(staticPlugin, {
   root: frontendDist,
   prefix: '/',
