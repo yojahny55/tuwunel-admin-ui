@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -15,7 +15,7 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
