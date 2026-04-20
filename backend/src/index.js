@@ -39,13 +39,13 @@ const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.register(staticPlugin, {
   root: frontendDist,
   prefix: '/',
-  decorateReply: false,
+  decorateReply: true,
 });
 
 // SPA fallback
 app.setNotFoundHandler((request, reply) => {
   if (!request.url.startsWith('/api')) {
-    reply.sendFile('index.html');
+    return reply.sendFile('index.html');
   } else {
     reply.code(404).send({ error: 'Not found' });
   }
