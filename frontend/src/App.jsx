@@ -7,19 +7,10 @@ import Rooms from './pages/Rooms';
 import Users from './pages/Users';
 import Status from './pages/Status';
 
-function ProtectedRoutes() {
+function ProtectedRoute({ children }) {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" />;
-  return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/rooms" element={<Rooms />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/status" element={<Status />} />
-      </Routes>
-    </Layout>
-  );
+  return children;
 }
 
 export default function App() {
@@ -28,7 +19,12 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/*" element={<ProtectedRoutes />} />
+          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route index element={<Dashboard />} />
+            <Route path="rooms" element={<Rooms />} />
+            <Route path="users" element={<Users />} />
+            <Route path="status" element={<Status />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
