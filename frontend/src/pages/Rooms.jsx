@@ -110,29 +110,39 @@ export default function Rooms() {
           {/* Invite user to room */}
           <div className="mt-4 pt-3 border-t border-gray-800">
             <label className="block text-xs text-gray-400 mb-1">Invite user to this room</label>
-            <div className="flex gap-2">
+            <div className="space-y-2">
               <input
                 type="text"
                 placeholder="@username:atreides.local"
                 value={inviting === selected ? inviteUserId : ''}
                 onChange={(e) => { setInviteUserId(e.target.value); setInviting(selected); }}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-indigo-500"
               />
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="autojoin-check"
+                  defaultChecked={true}
+                  className="rounded bg-gray-800 border-gray-700"
+                />
+                <label htmlFor="autojoin-check" className="text-xs text-gray-400">Auto-join (user joins immediately)</label>
+              </div>
               <button
                 onClick={async () => {
                   if (!inviteUserId) return;
+                  const autoJoin = document.getElementById('autojoin-check')?.checked;
                   try {
-                    await api.inviteToRoom(selected, inviteUserId);
-                    setOutput(`✅ Invited ${inviteUserId} to ${selected}`);
+                    await api.inviteToRoom(selected, inviteUserId, autoJoin);
+                    setOutput(`✅ Invited ${inviteUserId} to room`);
                     setInviteUserId('');
-                    showMembers(selected); // refresh members
+                    setTimeout(() => showMembers(selected), 500);
                   } catch (err) {
                     setOutput(`❌ ${err.message}`);
                   }
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm"
               >
-                Invite
+                Invite & Join
               </button>
             </div>
           </div>

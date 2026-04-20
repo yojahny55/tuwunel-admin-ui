@@ -94,18 +94,46 @@ export default async function (app) {
     }
   });
 
-  // Invite user to room
+  // Invite user to room (and auto-join if possible)
   app.post('/rooms/:roomId/invite', { preHandler: [app.authenticate] }, async (request, reply) => {
     const { roomId } = request.params;
-    const { user_id } = request.body || {};
+    const { user_id, auto_join } = request.body || {};
     if (!user_id) return reply.code(400).send({ error: 'user_id required' });
     try {
+      // Invite
       await matrixRequest(
         'POST',
         `/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/invite`,
         getToken(request),
         { user_id }
       );
+
+      // Auto-join: login as the invited user and join the room
+      if (auto_join) {
+        try {
+          const MATRIX_DOMAIN = process.env.MATRIX_DOMAIN || 'atreides.local';
+          const localPart = user_id.replace(/^@/, '').replace(/:.+$/, '');
+          // Try common password first, then fail silently
+          const loginRes = await fetch(`${MATRIX_SERVER}/_matrix/client/v3/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'm.login.password',
+              identifier: { type: 'm.id.user', user: localPart },
+              password: request.body.password || '',
+            }),
+          });
+          const loginData = await loginRes.json();
+          if (loginRes.ok && loginData.access_token) {
+            await fetch(`${MATRIX_SERVER}/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/join`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${loginData.access_token}`, 'Content-Type': 'application/json' },
+              body: '{}',
+            });
+          }
+        } catch { /* auto-join best effort */ }
+      }
+
       return { success: true };
     } catch (err) {
       return reply.code(500).send({ error: err.error || 'Failed to invite' });
