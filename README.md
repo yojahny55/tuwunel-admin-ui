@@ -6,12 +6,34 @@ Admin panel for [Tuwunel](https://github.com/matrix-construct/tuwunel) Matrix ho
 
 ## Features
 
-- **Dashboard** — Server info, room count, member count, health status
-- **Room Management** — List joined rooms, view members, invite users, delete rooms
-- **User Management** — Create users, invite & auto-join to rooms, deactivate, reset password
-- **Admin Console** — Send raw `!admin` commands directly to the Tuwunel admin room
-- **Server Status** — Health checks and version info
-- **Dark Theme** — Clean, modern UI with responsive mobile support
+### Dashboard
+- Server version and name
+- Total rooms and members at a glance
+- Health status indicator
+- Quick server info overview
+
+### Room Management
+- List all joined rooms
+- View room members with avatars
+- Invite users to any room
+- Auto-join support (invited user joins immediately, no pending invites)
+- Delete rooms via admin commands
+
+### User Management
+- Create new users via registration API (no admin room needed)
+- Clear username hints showing full Matrix ID preview
+- Invite users to rooms with password-based auto-join
+- Deactivate users (requires admin room)
+- Reset user passwords (requires admin room)
+
+### Admin Console
+- Send raw `!admin` commands directly to the Tuwunel admin room
+- Useful for operations not exposed in the UI yet
+
+### General
+- Dark theme with responsive mobile support
+- JWT-based authentication using Matrix credentials
+- All API calls proxied through backend (frontend never talks to Matrix directly)
 
 ## Architecture
 
