@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const nav = [
@@ -9,7 +9,7 @@ const nav = [
   { to: '/status', label: 'Status', icon: '💚' },
 ];
 
-export default function Layout() {
+export default function Layout({ children }) {
   const { userId, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -72,7 +72,7 @@ export default function Layout() {
       )}
 
       <main className="flex-1 md:p-6 p-4 pt-16 md:pt-6 overflow-auto">
-        <Outlet />
+        {children}
       </main>
     </div>
   );
