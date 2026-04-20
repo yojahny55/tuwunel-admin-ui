@@ -5,7 +5,8 @@ import Card from '../components/Card';
 import Spinner from '../components/Spinner';
 
 export default function Rooms() {
-  const { data, loading, refetch } = useApi(() => api.getRooms());
+  const { data: publicData, loading: publicLoading } = useApi(() => api.getRooms());
+  const { data: joinedData, loading: joinedLoading, refetch } = useApi(() => api.getJoinedRooms());
   const [selected, setSelected] = useState(null);
   const [members, setMembers] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -35,47 +36,62 @@ export default function Rooms() {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (publicLoading && joinedLoading) return <Spinner />;
 
-  const rooms = data?.chunk || [];
+  const publicRooms = publicData?.chunk || [];
+  const joinedRooms = joinedData?.joined_rooms || [];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Rooms</h2>
-        <span className="text-sm text-gray-500">{rooms.length} public rooms</span>
-      </div>
+      <h2 className="text-2xl font-bold">Rooms</h2>
 
-      <div className="space-y-2">
-        {rooms.length === 0 && <p className="text-gray-500">No public rooms found.</p>}
-        {rooms.map((room) => (
-          <Card key={room.room_id} className="hover:border-gray-700 transition">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-white truncate">{room.name || room.room_id}</p>
-                <p className="text-xs text-gray-500 font-mono truncate">{room.room_id}</p>
-                {room.topic && <p className="text-sm text-gray-400 mt-1 truncate">{room.topic}</p>}
+      {/* Joined Rooms */}
+      <Card title={`Joined Rooms (${joinedRooms.length})`}>
+        {joinedRooms.length === 0 ? (
+          <p className="text-gray-500 text-sm">No joined rooms.</p>
+        ) : (
+          <div className="space-y-2">
+            {joinedRooms.map((roomId) => (
+              <div key={roomId} className="flex items-center justify-between gap-4 py-1 border-b border-gray-800 last:border-0">
+                <p className="text-sm text-gray-300 font-mono truncate min-w-0 flex-1">{roomId}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => showMembers(roomId)} className="text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-300">
+                    Members
+                  </button>
+                  <button
+                    onClick={() => handleDelete(roomId)}
+                    disabled={deleting === roomId}
+                    className="text-xs px-2 py-1 bg-red-900/50 hover:bg-red-800 text-red-300 rounded disabled:opacity-50"
+                  >
+                    {deleting === roomId ? '...' : 'Delete'}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-sm text-gray-400">{room.joined_members || 0} members</span>
-                <button onClick={() => showMembers(room.room_id)} className="text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-300">
-                  Members
-                </button>
-                <button
-                  onClick={() => handleDelete(room.room_id)}
-                  disabled={deleting === room.room_id}
-                  className="text-xs px-2 py-1 bg-red-900/50 hover:bg-red-800 text-red-300 rounded disabled:opacity-50"
-                >
-                  {deleting === room.room_id ? '...' : 'Delete'}
-                </button>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Public Rooms */}
+      {publicRooms.length > 0 && (
+        <Card title={`Public Rooms (${publicRooms.length})`}>
+          <div className="space-y-2">
+            {publicRooms.map((room) => (
+              <div key={room.room_id} className="flex items-center justify-between gap-4 py-1 border-b border-gray-800 last:border-0">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-white truncate">{room.name || room.room_id}</p>
+                  {room.topic && <p className="text-xs text-gray-400 truncate">{room.topic}</p>}
+                </div>
+                <span className="text-sm text-gray-400 shrink-0">{room.joined_members || 0} members</span>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {selected && members && (
-        <Card title={`Members of ${selected.slice(0, 30)}...`}>
+        <Card title={`Members`}>
+          <p className="text-xs text-gray-500 font-mono mb-2">{selected}</p>
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {Object.entries(members).map(([userId, info]) => (
               <div key={userId} className="flex items-center gap-2 py-1 text-sm">
@@ -83,7 +99,6 @@ export default function Rooms() {
                   {(info.display_name || userId)[0]?.toUpperCase()}
                 </span>
                 <span className="text-gray-300">{info.display_name || userId}</span>
-                <span className="text-gray-600 text-xs font-mono">{userId}</span>
               </div>
             ))}
             {Object.keys(members).length === 0 && <p className="text-gray-500 text-sm">No members found</p>}

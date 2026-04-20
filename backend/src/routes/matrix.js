@@ -6,15 +6,13 @@ export default async function (app) {
   // Server version / well-known
   app.get('/server/info', { preHandler: [app.authenticate] }, async (request) => {
     try {
-      const [version, wellknown] = await Promise.allSettled([
-        fetch(`${MATRIX_SERVER}/_matrix/federation/v1/version`).then(r => r.json()),
+      const [clientVersions] = await Promise.allSettled([
         matrixRequest('GET', '/_matrix/client/versions', getToken(request)),
       ]);
       return {
         domain: process.env.MATRIX_DOMAIN || 'atreides.local',
         serverUrl: MATRIX_SERVER,
-        versions: version.status === 'fulfilled' ? version.value : null,
-        clientVersions: wellknown.status === 'fulfilled' ? wellknown.value : null,
+        clientVersions: clientVersions.status === 'fulfilled' ? clientVersions.value : null,
       };
     } catch {
       return { domain: process.env.MATRIX_DOMAIN, serverUrl: MATRIX_SERVER };

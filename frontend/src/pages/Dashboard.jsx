@@ -6,11 +6,12 @@ import Spinner from '../components/Spinner';
 export default function Dashboard() {
   const { data: info, loading: infoLoading } = useApi(() => api.getServerInfo());
   const { data: rooms, loading: roomsLoading } = useApi(() => api.getRooms());
-  const { data: health } = useApi(() => api.getHealth());
+  const { data: joinedRooms, loading: joinedLoading } = useApi(() => api.getJoinedRooms());
+  const { data: health, error: healthError } = useApi(() => api.getHealth());
 
   if (infoLoading) return <Spinner />;
 
-  const roomCount = rooms?.chunk?.length || 0;
+  const roomCount = joinedRooms?.joined_rooms?.length || rooms?.chunk?.length || 0;
   const totalMembers = rooms?.chunk?.reduce((sum, r) => sum + (r.joined_members || 0), 0) || 0;
 
   return (
@@ -54,13 +55,12 @@ export default function Dashboard() {
         </dl>
       </Card>
 
-      {rooms?.chunk?.length > 0 && (
-        <Card title="Recent Rooms">
+      {joinedRooms?.joined_rooms?.length > 0 && (
+        <Card title="Joined Rooms">
           <div className="space-y-2">
-            {rooms.chunk.slice(0, 5).map((room) => (
-              <div key={room.room_id} className="flex justify-between items-center py-1 border-b border-gray-800 last:border-0">
-                <span className="text-sm text-gray-300 truncate">{room.name || room.room_id}</span>
-                <span className="text-xs text-gray-500">{room.joined_members || 0} members</span>
+            {joinedRooms.joined_rooms.slice(0, 5).map((roomId) => (
+              <div key={roomId} className="flex items-center py-1 border-b border-gray-800 last:border-0">
+                <span className="text-sm text-gray-300 font-mono truncate">{roomId}</span>
               </div>
             ))}
           </div>
